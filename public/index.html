@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizGenius - Interactive 3D Quiz Experience</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            overflow-x: hidden;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: #000;
+        }
+        canvas { 
+            display: block; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        #content {
+            position: relative;
+            z-index: 1;
+        }
+        .section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+        h1 { font-size: 4em; margin-bottom: 0.5em; }
+        h2 { font-size: 2em; margin-bottom: 1em; }
+        p { font-size: 1.2em; max-width: 600px; margin-bottom: 1em; }
+        .cta-button {
+            font-size: 1.2em;
+            padding: 15px 30px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .cta-button:hover { 
+            background-color: #3a7bc8; 
+            transform: scale(1.05);
+        }
+        #features {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 2em;
+        }
+        .feature {
+            flex-basis: 30%;
+            margin-bottom: 1em;
+        }
+        #testimonials {
+            font-style: italic;
+        }
+        
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 0.9em;
+            backdrop-filter: blur(5px);
+            transform: perspective(500px) rotateX(5deg);
+            transform-origin: bottom;
+            box-shadow: 0 -5px 10px rgba(0,0,0,0.2);
+        }
+
+        .footer-content {
+            transform: translateZ(20px);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    <div id="content">
+        <section class="section" id="hero">
+            <h1>QuizGenius</h1>
+            <h2>Unleash Your Knowledge in 3D</h2>
+            <p>Experience a revolutionary way of learning with our interactive 3D quizzes.</p>
+            <button class="cta-button" onclick="window.location.href='quiz.html'">Start Your 3D Quiz Adventure</button>
+        </section>
+
+        <section class="section" id="about">
+            <h2>About QuizGenius</h2>
+            <p>QuizGenius combines cutting-edge 3D technology with engaging quizzes to create an immersive learning experience like no other.</p>
+        </section>
+
+        <section class="section" id="features">
+            <h2>Features</h2>
+            <div class="feature">
+                <h3>Interactive 3D Environment</h3>
+                <p>Explore knowledge in a visually stunning 3D world.</p>
+            </div>
+            <div class="feature">
+                <h3>Adaptive Learning</h3>
+                <p>Quizzes that adapt to your skill level for optimal learning.</p>
+            </div>
+            <div class="feature">
+                <h3>Real-time Feedback</h3>
+                <p>Get instant feedback and explanations for each answer.</p>
+            </div>
+        </section>
+
+        <section class="section" id="testimonials">
+            <h2>What Our Users Say</h2>
+            <p>"QuizGenius transformed the way I study. The 3D quizzes make learning fun and memorable!" - Sarah K.</p>
+            <p>"As a teacher, I've seen a significant improvement in student engagement with QuizGenius." - Mr. Johnson</p>
+        </section>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            Dev ❤ Nishij
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, particles;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.querySelector('#bg'),
+                alpha: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Create particles
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const colors = [];
+
+            const particleCount = 10000;
+            const googleColors = [
+                new THREE.Color(0x4285F4), // Google Blue
+                new THREE.Color(0x34A853), // Google Green
+                new THREE.Color(0xFBBC05), // Google Yellow
+                new THREE.Color(0xEA4335)  // Google Red
+            ];
+
+            for (let i = 0; i < particleCount; i++) {
+                vertices.push(
+                    Math.random() * 2000 - 1000,
+                    Math.random() * 2000 - 1000,
+                    Math.random() * 2000 - 1000
+                );
+
+                const color = googleColors[Math.floor(Math.random() * googleColors.length)];
+                colors.push(color.r, color.g, color.b);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 3,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.7
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            camera.position.z = 1000;
+
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+
+            // Add directional light
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            particles.rotation.x += 0.0002;
+            particles.rotation.y += 0.0005;
+
+            // Add some wave-like motion
+            const positions = particles.geometry.attributes.position.array;
+            const time = Date.now() * 0.0005;
+
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i + 1] += Math.sin(time + positions[i] * 0.01) * 0.1;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        init();
+        animate();
+
+        window.addEventListener('resize', onWindowResize, false);
+    </script>
+</body>
+</html>
